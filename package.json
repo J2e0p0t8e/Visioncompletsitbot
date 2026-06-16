@@ -1,0 +1,26 @@
+{
+  "name": "vision-bot",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bot Discord officiel Vision+ — lié à vision-plus.tech",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "register-commands": "tsx src/register-commands.ts"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.108.2",
+    "discord.js": "^14.25.1",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4.21.0",
+    "typescript": "^5"
+  }
+}
