@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS discord_members (
   discord_id    TEXT PRIMARY KEY,
   username      TEXT NOT NULL,
   display_name  TEXT,
-  total_xp      INTEGER NOT NULL DEFAULT 0,
+  total_xp      NUMERIC(12, 1) NOT NULL DEFAULT 0,
   level         INTEGER NOT NULL DEFAULT 1,
   message_count INTEGER NOT NULL DEFAULT 0,
   voice_minutes INTEGER NOT NULL DEFAULT 0,
@@ -23,7 +23,7 @@ CREATE INDEX IF NOT EXISTS idx_discord_members_total_xp
 CREATE TABLE IF NOT EXISTS xp_ledger (
   id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   discord_id  TEXT NOT NULL REFERENCES discord_members (discord_id) ON DELETE CASCADE,
-  amount      INTEGER NOT NULL,
+  amount      NUMERIC(12, 1) NOT NULL,
   source      TEXT NOT NULL CHECK (source IN ('message', 'reaction', 'voice', 'quiz', 'bonus')),
   metadata    JSONB,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -72,17 +72,17 @@ CREATE OR REPLACE FUNCTION credit_discord_xp(
   p_discord_id TEXT,
   p_username TEXT,
   p_display_name TEXT,
-  p_amount INTEGER,
+  p_amount NUMERIC,
   p_source TEXT,
   p_metadata JSONB DEFAULT NULL
 )
-RETURNS TABLE (new_total_xp INTEGER, new_level INTEGER)
+RETURNS TABLE (new_total_xp NUMERIC, new_level INTEGER)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_total INTEGER;
+  v_total NUMERIC;
   v_level INTEGER;
 BEGIN
   INSERT INTO discord_members (discord_id, username, display_name, total_xp, level)
@@ -124,4 +124,4 @@ GRANT ALL ON TABLE xp_ledger TO service_role, postgres;
 GRANT ALL ON TABLE xp_cooldowns TO service_role, postgres;
 GRANT ALL ON TABLE player_codes TO service_role, postgres;
 
-GRANT EXECUTE ON FUNCTION credit_discord_xp(TEXT, TEXT, TEXT, INTEGER, TEXT, JSONB) TO service_role, postgres;
+GRANT EXECUTE ON FUNCTION credit_discord_xp(TEXT, TEXT, TEXT, NUMERIC, TEXT, JSONB) TO service_role, postgres;

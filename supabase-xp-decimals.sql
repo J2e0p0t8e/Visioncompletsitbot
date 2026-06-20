@@ -1,6 +1,9 @@
 -- Vision+ — XP décimaux (0.5 par réaction, etc.)
 -- Exécuter dans Supabase → SQL Editor
 
+-- Supprime l'ancienne version INTEGER si elle existe (évite les doublons)
+DROP FUNCTION IF EXISTS public.credit_discord_xp(TEXT, TEXT, TEXT, INTEGER, TEXT, JSONB);
+
 ALTER TABLE discord_members
   ALTER COLUMN total_xp TYPE NUMERIC(12, 1) USING total_xp::numeric;
 

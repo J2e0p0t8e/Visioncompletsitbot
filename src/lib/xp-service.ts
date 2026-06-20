@@ -164,3 +164,79 @@ export async function getMemberRank(discordId: string): Promise<number | null> {
   const index = data.findIndex((m) => m.discord_id === discordId);
   return index >= 0 ? index + 1 : null;
 }
+
+export type ResetStatsResult =
+  | { ok: true; scope: "member"; discordId: string }
+  | { ok: true; scope: "all"; membersAffected: number }
+  | { ok: false; error: string };
+
+export async function resetMemberStats(
+  discordId: string
+): Promise<ResetStatsResult> {
+  const { data: member, error: fetchError } = await supabase
+    .from("discord_members")
+    .select("discord_id")
+    .eq("discord_id", discordId)
+    .maybeSingle();
+
+  if (fetchError) {
+    return { ok: false, error: "Impossible de lire le profil du membre." };
+  }
+
+  if (!member) {
+    return {
+      ok: false,
+      error: "Ce membre n'a encore aucune stat enregistrée.",
+    };
+  }
+
+  const { error: updateError } = await supabase
+    .from("discord_members")
+    .update({
+      total_xp: 0,
+      level: 1,
+      message_count: 0,
+      voice_minutes: 0,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("discord_id", discordId);
+
+  if (updateError) {
+    return { ok: false, error: "Impossible de réinitialiser le profil." };
+  }
+
+  await supabase.from("xp_ledger").delete().eq("discord_id", discordId);
+  await supabase.from("xp_cooldowns").delete().eq("discord_id", discordId);
+
+  return { ok: true, scope: "member", discordId };
+}
+
+export async function resetAllMemberStats(): Promise<ResetStatsResult> {
+  const { count, error: countError } = await supabase
+    .from("discord_members")
+    .select("discord_id", { count: "exact", head: true });
+
+  if (countError) {
+    return { ok: false, error: "Impossible de compter les profils." };
+  }
+
+  const { error: updateError } = await supabase
+    .from("discord_members")
+    .update({
+      total_xp: 0,
+      level: 1,
+      message_count: 0,
+      voice_minutes: 0,
+      updated_at: new Date().toISOString(),
+    })
+    .neq("discord_id", "");
+
+  if (updateError) {
+    return { ok: false, error: "Impossible de réinitialiser les profils." };
+  }
+
+  await supabase.from("xp_ledger").delete().neq("discord_id", "");
+  await supabase.from("xp_cooldowns").delete().neq("discord_id", "");
+
+  return { ok: true, scope: "all", membersAffected: count ?? 0 };
+}

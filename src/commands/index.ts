@@ -3,6 +3,7 @@ import type {
   SlashCommandBuilder,
   SlashCommandSubcommandsOnlyBuilder,
 } from "discord.js";
+import { adminCommand } from "./admin.js";
 import { leaderboardCommand } from "./leaderboard.js";
 import { pingCommand } from "./ping.js";
 import { quizCommand } from "./quiz.js";
@@ -20,4 +21,5 @@ export const commands: BotCommand[] = [
   rankCommand,
   leaderboardCommand,
   quizCommand,
+  adminCommand,
 ];

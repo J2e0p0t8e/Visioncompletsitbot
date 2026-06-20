@@ -29,21 +29,23 @@ GRANT SELECT ON TABLE discord_members TO authenticated;
 
 -- ─── 3. Fonction RPC en SECURITY DEFINER (contourne les blocages RLS) ───────
 
+DROP FUNCTION IF EXISTS public.credit_discord_xp(TEXT, TEXT, TEXT, INTEGER, TEXT, JSONB);
+
 CREATE OR REPLACE FUNCTION credit_discord_xp(
   p_discord_id TEXT,
   p_username TEXT,
   p_display_name TEXT,
-  p_amount INTEGER,
+  p_amount NUMERIC,
   p_source TEXT,
   p_metadata JSONB DEFAULT NULL
 )
-RETURNS TABLE (new_total_xp INTEGER, new_level INTEGER)
+RETURNS TABLE (new_total_xp NUMERIC, new_level INTEGER)
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_total INTEGER;
+  v_total NUMERIC;
   v_level INTEGER;
 BEGIN
   INSERT INTO discord_members (discord_id, username, display_name, total_xp, level)
@@ -73,5 +75,5 @@ BEGIN
 END;
 $$;
 
-GRANT EXECUTE ON FUNCTION credit_discord_xp(TEXT, TEXT, TEXT, INTEGER, TEXT, JSONB) TO service_role;
-GRANT EXECUTE ON FUNCTION credit_discord_xp(TEXT, TEXT, TEXT, INTEGER, TEXT, JSONB) TO postgres;
+GRANT EXECUTE ON FUNCTION credit_discord_xp(TEXT, TEXT, TEXT, NUMERIC, TEXT, JSONB) TO service_role;
+GRANT EXECUTE ON FUNCTION credit_discord_xp(TEXT, TEXT, TEXT, NUMERIC, TEXT, JSONB) TO postgres;
