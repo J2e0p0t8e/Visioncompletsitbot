@@ -1,4 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
+import type { WebSocketLikeConstructor } from "@supabase/realtime-js";
+import ws from "ws";
 import { config } from "../config.js";
 
 function assertServiceRoleKey(key: string): void {
@@ -28,6 +30,9 @@ export const supabase = createClient(
   config.supabaseServiceKey,
   {
     auth: { persistSession: false, autoRefreshToken: false },
+    realtime: {
+      transport: ws as unknown as WebSocketLikeConstructor,
+    },
   }
 );
 
