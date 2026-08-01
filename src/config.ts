@@ -39,7 +39,7 @@ export const config = {
   discordInvite:
     process.env.DISCORD_INVITE_URL?.trim() ||
     "https://discord.gg/83N75v6VRh",
-  port: Number(process.env.PORT || 3001),
+  port: Number(process.env.PORT || 4001),
 
   supabaseUrl: required("SUPABASE_URL"),
   supabaseServiceKey: required("SUPABASE_SERVICE_ROLE_KEY"),
