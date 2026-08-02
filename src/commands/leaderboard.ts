@@ -35,24 +35,24 @@ export const leaderboardCommand: BotCommand = {
       const points = formatXpAmount(row.total_xp);
 
       if (i === 0) {
-        podiumLines.push(`> 🥇 **${name}**\n> \` 👑 ${points} VXPlus \``);
+        podiumLines.push(`> 🥇 **${name}** • \` 👑 ${points} VXPlus \``);
       } else if (i === 1) {
-        podiumLines.push(`> 🥈 **${name}**\n> \` 💎 ${points} VXPlus \``);
+        podiumLines.push(`> 🥈 **${name}** • \` 💎 ${points} VXPlus \``);
       } else if (i === 2) {
-        podiumLines.push(`> 🥉 **${name}**\n> \` 💫 ${points} VXPlus \``);
+        podiumLines.push(`> 🥉 **${name}** • \` 💫 ${points} VXPlus \``);
       } else {
-        restLines.push(`**${i + 1}.**  **${name}**  •  \` ${points} VXPlus \``);
+        restLines.push(`**${i + 1}.** **${name}** • \` ${points} VXPlus \``);
       }
     });
 
     const descriptionParts: string[] = [];
 
     if (podiumLines.length > 0) {
-      descriptionParts.push("### 🌟  PODIUM DES CHAMPIONS\n" + podiumLines.join("\n\n"));
+      descriptionParts.push("### 🌟 PODIUM DES CHAMPIONS\n" + podiumLines.join("\n"));
     }
 
     if (restLines.length > 0) {
-      descriptionParts.push("### 🏅  SUITE DU CLASSEMENT\n" + restLines.join("\n"));
+      descriptionParts.push("### 🏅 SUITE DU CLASSEMENT\n" + restLines.join("\n"));
     }
 
     const embed = new EmbedBuilder()
