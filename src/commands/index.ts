@@ -10,6 +10,7 @@ import { quizCommand } from "./quiz.js";
 import { rankCommand } from "./rank.js";
 import { siteCommand } from "./site.js";
 import { soumissionCommand } from "./soumission.js";
+import { temoignageCommand } from "./temoignage.js";
 
 export type BotCommand = {
   data: SlashCommandBuilder | SlashCommandSubcommandsOnlyBuilder;
@@ -24,4 +25,5 @@ export const commands: BotCommand[] = [
   quizCommand,
   adminCommand,
   soumissionCommand,
+  temoignageCommand,
 ];
