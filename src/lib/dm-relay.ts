@@ -16,9 +16,6 @@ interface RelayedMessage {
 // Carte en mémoire : ID du message reçu par un admin -> Données de la requête
 const relayMap = new Map<string, RelayedMessage>();
 
-// Carte : ID de l'admin -> Dernière requête active pour envoi continu de messages sans répliquer le bouton Répondre
-const activeConversationMap = new Map<string, RelayedMessage>();
-
 /**
  * Gère les messages privés (MP/DM) envoyés directement au bot.
  */
@@ -95,7 +92,7 @@ async function handleUserMessage(client: Client, message: Message): Promise<void
 async function handleAdminReply(client: Client, message: Message): Promise<void> {
   let relayedData: RelayedMessage | undefined = undefined;
 
-  // 1. Vérifier si l'admin a utilisé la fonction "Répondre" de Discord sur un message relayé
+  // 1. Vérifier obligatoirement si l'admin a utilisé la fonction "Répondre" de Discord sur un message relayé
   if (message.reference?.messageId) {
     relayedData = relayMap.get(message.reference.messageId);
 
@@ -120,24 +117,16 @@ async function handleAdminReply(client: Client, message: Message): Promise<void>
     }
   }
 
-  // 2. Sinon, vérifier la conversation active de cet admin
-  if (!relayedData) {
-    relayedData = activeConversationMap.get(message.author.id);
-  }
-
-  // Si impossible de déterminer le destinataire
+  // Si l'admin n'a pas utilisé le bouton Répondre ou sur un message non reconnu
   if (!relayedData) {
     await message.reply({
       content:
-        "⚠️ **Impossible d'identifier à quel membre envoyer ce message.** Veuillez utiliser l'option **« Répondre » (Reply)** de Discord directement sur l'un des messages relayés du membre !",
+        "⚠️ **Attention : Impossible d'identifier à quel membre envoyer ce message.**\nPour envoyer une réponse, vous devez impérativement faire un **clic droit (ou appui long) -> « Répondre » (Reply)** directement sur l'embed relayé de l'utilisateur !",
     });
     return;
   }
 
-  // Enregistrer comme conversation active pour cet admin
-  activeConversationMap.set(message.author.id, relayedData);
-
-  // 3. Envoyer la réponse de l'admin à l'utilisateur ciblé
+  // 2. Envoyer la réponse de l'admin à l'utilisateur ciblé
   try {
     const targetUser = await client.users.fetch(relayedData.userId);
     const attachmentUrls = Array.from(message.attachments.values()).map((a) => a.url);
@@ -165,7 +154,7 @@ async function handleAdminReply(client: Client, message: Message): Promise<void>
     return;
   }
 
-  // 4. Avertir l'AUTRE administrateur qu'une réponse a été apportée et qu'il ne faut plus répondre !
+  // 3. Avertir l'AUTRE administrateur qu'une réponse a été apportée et qu'il ne faut plus répondre !
   if (!relayedData.handledBy || relayedData.handledBy !== message.author.id) {
     relayedData.handledBy = message.author.id;
 
