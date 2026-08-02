@@ -19,7 +19,7 @@ export const leaderboardCommand: BotCommand = {
     if (rows.length === 0) {
       const emptyEmbed = new EmbedBuilder()
         .setColor(0xff3366)
-        .setTitle("🏆 Classement VXPlus Vision+")
+        .setTitle("🏆  CLASSEMENT VISION+  🏆")
         .setDescription("Aucun VXPlus enregistré pour le moment. Sois le premier actif !")
         .setTimestamp();
 
@@ -27,45 +27,38 @@ export const leaderboardCommand: BotCommand = {
       return;
     }
 
-    const lines: string[] = [];
+    const podiumLines: string[] = [];
+    const restLines: string[] = [];
 
     rows.forEach((row, i) => {
-      const name = (row.display_name || row.username).replace(/[`\\]/g, "");
+      const name = (row.display_name || row.username).replace(/[`*_\\]/g, "");
       const points = formatXpAmount(row.total_xp);
 
-      // Style spécial pour les points (Vert éclatant en ANSI + icônes et crochets)
-      const styledPoints = `\u001b[1;32m⚡ 【 ${points} VXPlus 】 ⚡\u001b[0m`;
-
-      let line = "";
       if (i === 0) {
-        // 🥇 1er : Nom en Jaune / Doré Brillant (33m)
-        line = `🥇 \u001b[1;33m👑 ★ 〘 ${name} 〙 ★\u001b[0m ───► ${styledPoints}`;
+        podiumLines.push(`> 🥇 **${name}**\n> \` 👑 ${points} VXPlus \``);
       } else if (i === 1) {
-        // 🥈 2eme : Nom en Blanc / Argenté Brillant (37m)
-        line = `🥈 \u001b[1;37m✨ ◈ 〘 ${name} 〙 ◈\u001b[0m ───► ${styledPoints}`;
+        podiumLines.push(`> 🥈 **${name}**\n> \` 💎 ${points} VXPlus \``);
       } else if (i === 2) {
-        // 🥉 3eme : Nom en Rouge / Bronze Brillant (31m)
-        line = `🥉 \u001b[1;31m💫 ◈ 〘 ${name} 〙 ◈\u001b[0m ───► ${styledPoints}`;
+        podiumLines.push(`> 🥉 **${name}**\n> \` 💫 ${points} VXPlus \``);
       } else {
-        // 4eme - 20eme : Numérotation alignée + Nom en Cyan Brillant (36m)
-        const rankNum = String(i + 1).padStart(2, "0");
-        line = ` #${rankNum} \u001b[1;36m✦ 〘 ${name} 〙\u001b[0m ───► ${styledPoints}`;
-      }
-
-      lines.push(line);
-
-      // Séparateur de podium après le 3ᵉ membre
-      if (i === 2 && rows.length > 3) {
-        lines.push("────────────────────────────────────────────────");
+        restLines.push(`**${i + 1}.**  **${name}**  •  \` ${points} VXPlus \``);
       }
     });
 
-    const description = "```ansi\n" + lines.join("\n") + "\n```";
+    const descriptionParts: string[] = [];
+
+    if (podiumLines.length > 0) {
+      descriptionParts.push("### 🌟  PODIUM DES CHAMPIONS\n" + podiumLines.join("\n\n"));
+    }
+
+    if (restLines.length > 0) {
+      descriptionParts.push("### 🏅  SUITE DU CLASSEMENT\n" + restLines.join("\n"));
+    }
 
     const embed = new EmbedBuilder()
-      .setColor(0x7c3aed) // Violet vibrant / Thème Vision+
+      .setColor(0x7c3aed)
       .setTitle("🏆  CLASSEMENT OFFICIEL VISION+  🏆")
-      .setDescription(description)
+      .setDescription(descriptionParts.join("\n\n"))
       .setThumbnail(interaction.guild?.iconURL() ?? LOGO_URL)
       .setFooter({
         text: "✨ Système de Récompense Vision+ • VXPlus",
