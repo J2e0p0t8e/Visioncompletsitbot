@@ -48,11 +48,11 @@ export const leaderboardCommand: BotCommand = {
     const descriptionParts: string[] = [];
 
     if (podiumLines.length > 0) {
-      descriptionParts.push("### 🌟 PODIUM DES CHAMPIONS\n" + podiumLines.join("\n"));
+      descriptionParts.push(podiumLines.join("\n"));
     }
 
     if (restLines.length > 0) {
-      descriptionParts.push("### 🏅 SUITE DU CLASSEMENT\n" + restLines.join("\n"));
+      descriptionParts.push(restLines.join("\n"));
     }
 
     const embed = new EmbedBuilder()
