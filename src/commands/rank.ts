@@ -9,7 +9,7 @@ import { formatXpBar, formatXpAmount, xpProgress } from "../lib/levels.js";
 export const rankCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName("rang")
-    .setDescription("Affiche ton niveau et ton XP Vision+"),
+    .setDescription("Affiche ton niveau et tes VXPlus"),
 
   async execute(interaction) {
     await interaction.deferReply({ flags: MessageFlags.Ephemeral });
@@ -19,7 +19,7 @@ export const rankCommand: BotCommand = {
     if (!profile) {
       await interaction.editReply({
         content:
-          "Tu n'as pas encore d'XP. Envoie des messages, réagis aux posts ou reste en vocal pour commencer !",
+          "Tu n'as pas encore de VXPlus. Envoie des messages, réagis aux posts ou reste en vocal pour commencer !",
       });
       return;
     }
@@ -32,9 +32,9 @@ export const rankCommand: BotCommand = {
       `**${interaction.user.displayName}** — Niveau **${progress.level}**`,
       rank ? `Classement serveur : **#${rank}**` : "",
       ``,
-      `XP total : **${formatXpAmount(profile.total_xp)}**`,
+      `VXPlus : **${formatXpAmount(profile.total_xp)}**`,
       `Progression : ${bar} ${progress.percent}%`,
-      `(${progress.current.toLocaleString("fr-FR")} / ${progress.needed.toLocaleString("fr-FR")} XP vers le niveau ${progress.level + 1})`,
+      `(${progress.current.toLocaleString("fr-FR")} / ${progress.needed.toLocaleString("fr-FR")} VXPlus vers le niveau ${progress.level + 1})`,
       ``,
       `Messages : ${profile.message_count} · Vocal : ${profile.voice_minutes} min`,
     ].filter(Boolean);

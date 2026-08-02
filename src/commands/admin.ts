@@ -19,7 +19,7 @@ export const adminCommand: BotCommand = {
     .addSubcommand(
       new SlashCommandSubcommandBuilder()
         .setName("reinitialiser-stats")
-        .setDescription("Remet à zéro l'XP et les stats Discord")
+        .setDescription("Remet à zéro les VXPlus et les stats Discord")
         .addStringOption((opt) =>
           opt
             .setName("portee")
@@ -79,8 +79,8 @@ export const adminCommand: BotCommand = {
           content: [
             `✅ Stats réinitialisées pour **${target.displayName}**`,
             ``,
-            `• XP, niveau, messages et vocal remis à zéro`,
-            `• Historique XP et cooldowns supprimés`,
+            `• VXPlus, niveau, messages et vocal remis à zéro`,
+            `• Historique des VXPlus et cooldowns supprimés`,
           ].join("\n"),
         });
         return;
@@ -111,7 +111,7 @@ export const adminCommand: BotCommand = {
           `✅ **Stats réinitialisées pour tout le serveur**`,
           ``,
           `• ${result.membersAffected} profil(s) remis à zéro`,
-          `• Historique XP et cooldowns effacés`,
+          `• Historique des VXPlus et cooldowns effacés`,
         ].join("\n"),
       });
     }

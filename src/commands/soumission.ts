@@ -204,7 +204,7 @@ export const soumissionCommand: BotCommand = {
           `Voici ton accès personnel et unique pour soumettre ton projet technologique au **Showroom Vision Challenge** de ce mois :\n\n` +
           `👉 **[Clique ici pour ouvrir le formulaire de soumission](${submitUrl})**\n\n` +
           `🔒 *Ce lien est rattaché exclusivement à ton compte Discord (\`${discordName}\`) et à ce mois. Ne le partage pas avec d'autres personnes.*\n` +
-          `🎁 **Bonus :** Tu recevras automatiquement **+50 XP Discord** dès la publication réussie de ton projet !`
+          `🎁 **Bonus :** Tu recevras automatiquement **+50 VXPlus** dès la publication réussie de ton projet !`
         )
         .setColor(0x3f51b5)
         .setFooter({ text: "Vision+ Showroom Challenge — 1 soumission maximum par mois" });
