@@ -138,7 +138,7 @@ export async function getMemberProfile(discordId: string) {
   return data;
 }
 
-export async function getLeaderboard(limit = 10) {
+export async function getLeaderboard(limit = 20) {
   const { data, error } = await supabase
     .from("discord_members")
     .select("discord_id, username, display_name, total_xp, level, message_count, voice_minutes")

@@ -8,16 +8,16 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 export const leaderboardCommand: BotCommand = {
   data: new SlashCommandBuilder()
     .setName("classement")
-    .setDescription("Top 10 des membres Vision+ par XP"),
+    .setDescription("Top 20 des membres Vision+ par points (VP)"),
 
   async execute(interaction) {
     await interaction.deferReply();
 
-    const rows = await getLeaderboard(10);
+    const rows = await getLeaderboard(20);
 
     if (rows.length === 0) {
       await interaction.editReply({
-        content: "Aucun XP enregistré pour le moment. Sois le premier actif !",
+        content: "Aucun point (VP) enregistré pour le moment. Sois le premier actif !",
       });
       return;
     }
@@ -25,11 +25,11 @@ export const leaderboardCommand: BotCommand = {
     const lines = rows.map((row, i) => {
       const medal = MEDALS[i] ?? `**${i + 1}.**`;
       const name = row.display_name || row.username;
-      return `${medal} **${name}** — Niv. ${row.level} · ${formatXpAmount(row.total_xp)} XP`;
+      return `${medal} **${name}** — **${formatXpAmount(row.total_xp)} VP**`;
     });
 
     await interaction.editReply({
-      content: ["**🏆 Classement XP Vision+**", "", ...lines].join("\n"),
+      content: ["**🏆 Classement VP (Vision Points) Vision+**", "", ...lines].join("\n"),
     });
   },
 };
