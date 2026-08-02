@@ -58,11 +58,16 @@ export const soumissionCommand: BotCommand = {
 
       const isOpen = sub === "open";
       const nowMonth = new Date().toISOString().slice(0, 7); // Ex: "2026-08"
+      const numericId = parseInt(nowMonth.replace(/[^0-9]/g, ""), 10);
       const customTitle = interaction.options.getString("titre", false)?.trim() || `Vision Challenge — ${nowMonth}`;
       const customDesc = interaction.options.getString("description", false)?.trim();
 
+      if (isOpen) {
+        await supabase.from("challenge_settings").update({ is_open: false }).neq("id", 0);
+      }
+
       const updatePayload: Record<string, unknown> = {
-        id: 1,
+        id: numericId,
         is_open: isOpen,
         current_month: nowMonth,
         updated_at: new Date().toISOString(),
@@ -108,12 +113,15 @@ export const soumissionCommand: BotCommand = {
     if (sub === "lien") {
       await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
-      // 1. Vérifier si le challenge est actuellement ouvert
-      const { data: settings, error: settingsErr } = await supabase
+      // 1. Vérifier si un challenge est actuellement ouvert ou récupérer la dernière session
+      const { data: settingsList, error: settingsErr } = await supabase
         .from("challenge_settings")
         .select("is_open, current_month")
-        .eq("id", 1)
-        .maybeSingle();
+        .order("is_open", { ascending: false })
+        .order("current_month", { ascending: false })
+        .limit(1);
+
+      const settings = settingsList?.[0];
 
       if (settingsErr || !settings) {
         await interaction.editReply({
