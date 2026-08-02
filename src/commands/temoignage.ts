@@ -5,8 +5,6 @@ import {
   TextInputBuilder,
   TextInputStyle,
   ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   type ModalActionRowComponentBuilder,
   type ModalSubmitInteraction,
   type User,
@@ -16,15 +14,18 @@ import type { BotCommand } from "./index.js";
 import { supabase } from "../lib/supabase.js";
 
 function buildTestimonialModal(existingContent?: string, existingRole?: string) {
+  const isEditing = Boolean(existingContent && existingContent.trim().length > 0);
   const modal = new ModalBuilder()
     .setCustomId("modal_testimonial")
-    .setTitle("Témoignage Vision+");
+    .setTitle(isEditing ? "Modifier mon témoignage" : "Nouveau témoignage Vision+");
 
   const contentInput = new TextInputBuilder()
     .setCustomId("content_input")
     .setLabel("Ton témoignage (expérience sur Discord/site)")
     .setStyle(TextInputStyle.Paragraph)
-    .setPlaceholder("Ex: Travailler ensemble sur les challenges en cybersécurité et les quiz live m'a beaucoup apporté...")
+    .setPlaceholder(
+      "Ex: Travailler ensemble sur les challenges en cybersécurité et les quiz live m'a beaucoup apporté..."
+    )
     .setRequired(true)
     .setMaxLength(450);
 
@@ -78,7 +79,7 @@ async function handleSaveTestimonial(submitted: ModalSubmitInteraction, user: Us
     console.error("[Témoignage] Erreur Supabase:", error);
     await submitted.reply({
       content:
-        "Une erreur technique est survenue lors de l'enregistrement de ton témoignage dans la base de données. Vérifie auprès des administrateurs que la table testimonials existe.",
+        "Une erreur technique est survenue lors de l'enregistrement de ton témoignage dans la base de données. Vérifie les privilèges SQL (RLS/GRANT) sur Supabase.",
       flags: MessageFlags.Ephemeral,
     });
     return;
@@ -86,7 +87,7 @@ async function handleSaveTestimonial(submitted: ModalSubmitInteraction, user: Us
 
   await submitted.reply({
     content:
-      "Ton témoignage a été enregistré avec succès ! Il s'affichera directement sur le carrousel du site web officiel Vision+.",
+      "Ton témoignage a été enregistré avec succès ! Il s'affiche en temps réel sur le carrousel du site web officiel Vision+.",
     flags: MessageFlags.Ephemeral,
   });
 }
@@ -99,73 +100,19 @@ export const temoignageCommand: BotCommand = {
   async execute(interaction) {
     const userId = interaction.user.id;
 
-    // Vérification rapide d'un témoignage existant dans Supabase
+    // Vérification rapide d'un témoignage existant (prend ~50ms sans bloquer l'interaction)
     const { data: existing } = await supabase
       .from("testimonials")
       .select("*")
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (existing && existing.content) {
-      // Le membre possède déjà un témoignage
-      const response = await interaction.reply({
-        content: `Tu as déjà un témoignage publié sur le site Vision+ :\n> "${existing.content}"\n\nSouhaites-tu modifier ce témoignage ?`,
-        components: [
-          new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder()
-              .setCustomId("edit_testimonial_btn")
-              .setLabel("Modifier mon témoignage")
-              .setStyle(ButtonStyle.Primary),
-            new ButtonBuilder()
-              .setCustomId("cancel_testimonial_btn")
-              .setLabel("Annuler")
-              .setStyle(ButtonStyle.Secondary)
-          ),
-        ],
-        flags: MessageFlags.Ephemeral,
-        fetchReply: true,
-      });
-
-      try {
-        const btnInteraction = await response.awaitMessageComponent({
-          filter: (i) => i.user.id === userId,
-          time: 60000,
-        });
-
-        if (btnInteraction.customId === "cancel_testimonial_btn") {
-          await btnInteraction.update({
-            content: "Action annulée. Ton témoignage reste inchangé.",
-            components: [],
-          });
-          return;
-        }
-
-        if (btnInteraction.customId === "edit_testimonial_btn") {
-          const modal = buildTestimonialModal(existing.content, existing.role);
-          await btnInteraction.showModal(modal);
-
-          try {
-            const submitted = await btnInteraction.awaitModalSubmit({
-              filter: (m) => m.customId === "modal_testimonial" && m.user.id === userId,
-              time: 300000,
-            });
-
-            await handleSaveTestimonial(submitted, interaction.user);
-          } catch {
-            // Timeout de 5 min lors de la saisie
-          }
-        }
-      } catch {
-        // Timeout de 60s sur le bouton modifier
-      }
-      return;
-    }
-
-    // Aucun témoignage existant : on lance directement le formulaire en modal
-    const modal = buildTestimonialModal();
+    // Construction du formulaire (modale) directement pré-rempli s'il existe déjà !
+    const modal = buildTestimonialModal(existing?.content, existing?.role);
     await interaction.showModal(modal);
 
     try {
+      // Attente de la soumission de la modale pendant 5 minutes maximum
       const submitted = await interaction.awaitModalSubmit({
         filter: (m) => m.customId === "modal_testimonial" && m.user.id === userId,
         time: 300000,
@@ -173,7 +120,7 @@ export const temoignageCommand: BotCommand = {
 
       await handleSaveTestimonial(submitted, interaction.user);
     } catch {
-      // Timeout lors de la saisie
+      // Expiration du délai d'attente lors de la saisie (l'utilisateur a refermé ou annulé la modale)
     }
   },
 };
