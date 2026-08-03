@@ -12,6 +12,7 @@ import { config } from "./config.js";
 import { registerMessageListener } from "./listeners/messages.js";
 import { registerReactionListener } from "./listeners/reactions.js";
 import { registerVoiceListener, getVoiceSessionCount } from "./listeners/voice.js";
+import { setupDailyLeaderboard } from "./lib/daily-leaderboard.js";
 
 const client = new Client({
   intents: [
@@ -36,6 +37,9 @@ client.once(Events.ClientReady, (readyClient) => {
   console.log(
     `[XP] Messages +${config.xp.message} | Réactions +${config.xp.reaction} | Vocal +${config.xp.voicePerMinute}/min`
   );
+
+  // Initialiser la publication automatique quotidienne dans 🔝・vision-chart
+  setupDailyLeaderboard(readyClient);
 });
 
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {

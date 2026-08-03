@@ -3,6 +3,7 @@ import type { BotCommand } from "./index.js";
 import {
   getMemberProfile,
   getMemberRank,
+  EXCLUDED_ADMIN_IDS,
 } from "../lib/xp-service.js";
 import { formatXpBar, formatXpAmount, xpProgress } from "../lib/levels.js";
 
@@ -25,12 +26,17 @@ export const rankCommand: BotCommand = {
     }
 
     const rank = await getMemberRank(interaction.user.id);
+    const isExcluded = EXCLUDED_ADMIN_IDS.includes(interaction.user.id);
     const progress = xpProgress(profile.total_xp);
     const bar = formatXpBar(progress.percent);
 
     const lines = [
       `**${interaction.user.displayName}** — Niveau **${progress.level}**`,
-      rank ? `Classement serveur : **#${rank}**` : "",
+      isExcluded
+        ? "Classement serveur : **Exclu du classement (Admin)**"
+        : rank
+        ? `Classement serveur : **#${rank}**`
+        : "",
       ``,
       `VXPlus : **${formatXpAmount(profile.total_xp)}**`,
       `Progression : ${bar} ${progress.percent}%`,

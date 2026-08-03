@@ -138,10 +138,18 @@ export async function getMemberProfile(discordId: string) {
   return data;
 }
 
+// IDs des administrateurs exclus temporairement du classement (Ecksoner & Jaye)
+export const EXCLUDED_ADMIN_IDS = [
+  "1467547346064773191", // Jaye:-:★
+  "946109748246356050",  // ecksoner (Mr Eckson with the vibes)
+  "1111604516513656885", // ecksoned (Jisen)
+];
+
 export async function getLeaderboard(limit = 20) {
   const { data, error } = await supabase
     .from("discord_members")
     .select("discord_id, username, display_name, total_xp, level, message_count, voice_minutes")
+    .not("discord_id", "in", `(${EXCLUDED_ADMIN_IDS.join(",")})`)
     .order("total_xp", { ascending: false })
     .limit(limit);
 
@@ -154,9 +162,14 @@ export async function getLeaderboard(limit = 20) {
 }
 
 export async function getMemberRank(discordId: string): Promise<number | null> {
+  if (EXCLUDED_ADMIN_IDS.includes(discordId)) {
+    return null; // Administrateurs exclus du classement
+  }
+
   const { data, error } = await supabase
     .from("discord_members")
     .select("discord_id")
+    .not("discord_id", "in", `(${EXCLUDED_ADMIN_IDS.join(",")})`)
     .order("total_xp", { ascending: false });
 
   if (error || !data) return null;
