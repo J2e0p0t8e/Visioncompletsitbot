@@ -26,6 +26,8 @@ const client = new Client({
   partials: [Partials.Message, Partials.Channel, Partials.Reaction],
 });
 
+(client as any).queues = new Map(); // Inject queues map for music bot logic
+
 const commandMap = new Map(commands.map((c) => [c.data.name, c]));
 
 registerMessageListener(client);
@@ -42,16 +44,58 @@ client.once(Events.ClientReady, (readyClient) => {
   setupDailyLeaderboard(readyClient);
 });
 
+// Import music interaction handlers
+import { safeAutocompleteRespond, isIgnorableAutocompleteError } from "./lib/music/autocomplete.js";
+import { handlePlayerButton } from "./lib/music/playerPanel.js";
+
+function isIgnorableInteractionError(err: any) {
+  return err?.code === 10062 || err?.code === 40060 || err?.message?.includes('Unknown interaction');
+}
+
 client.on(Events.InteractionCreate, async (interaction: Interaction) => {
+  if (interaction.isAutocomplete()) {
+    const command = commandMap.get(interaction.commandName);
+    if (command && (command as any).autocomplete) {
+      try {
+        await (command as any).autocomplete(interaction, client);
+      } catch (err: any) {
+        if (!isIgnorableAutocompleteError(err)) {
+          console.error(`Autocomplete ${interaction.commandName}:`, err.message);
+        }
+        await safeAutocompleteRespond(interaction, []);
+      }
+    }
+    return;
+  }
+
+  if (interaction.isButton() && interaction.customId.startsWith('player:')) {
+    try {
+      await handlePlayerButton(interaction, client);
+    } catch (err: any) {
+      if (!isIgnorableInteractionError(err)) {
+        console.error('Erreur bouton lecteur:', err.message);
+      }
+      if (!interaction.replied && !interaction.deferred) {
+        await interaction.reply({ content: '❌ Erreur du lecteur.', flags: MessageFlags.Ephemeral });
+      }
+    }
+    return;
+  }
+
   if (!interaction.isChatInputCommand()) return;
 
   const command = commandMap.get(interaction.commandName);
   if (!command) return;
 
   try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(`Erreur /${interaction.commandName}:`, error);
+    // Pass client as the second argument as expected by music bot commands
+    await (command.execute as any)(interaction, client);
+  } catch (error: any) {
+    if (!isIgnorableInteractionError(error)) {
+        console.error(`Erreur /${interaction.commandName}:`, error);
+    }
+    if (isIgnorableInteractionError(error)) return;
+    
     const msg = "Une erreur est survenue. Réessaie dans un instant.";
     if (interaction.replied || interaction.deferred) {
       await interaction.followUp({
