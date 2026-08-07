@@ -88,7 +88,8 @@ async function downloadYoutubeAudio(song) {
   const output = path.join(CACHE_DIR, `${videoId}.%(ext)s`);
 
   console.log(`⬇️ Téléchargement audio: ${song.title}`);
-  await ytDlp.execPromise([
+  
+  const ytDlpArgs = [
     url,
     '-f',
     'bestaudio[ext=webm][acodec=opus]/bestaudio[ext=webm]/bestaudio/best',
@@ -100,7 +101,14 @@ async function downloadYoutubeAudio(song) {
     '--ffmpeg-location',
     ffmpegPath,
     '--force-overwrites',
-  ]);
+  ];
+
+  const cookiesPath = path.join(__dirname, '..', '..', '..', 'cookies.txt');
+  if (fs.existsSync(cookiesPath)) {
+    ytDlpArgs.push('--cookies', cookiesPath);
+  }
+
+  await ytDlp.execPromise(ytDlpArgs);
 
   const filePath = findCachedFile(videoId);
   if (!filePath) throw new Error('Téléchargement audio échoué');
