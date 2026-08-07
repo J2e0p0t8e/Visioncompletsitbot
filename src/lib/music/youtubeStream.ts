@@ -92,7 +92,7 @@ async function downloadYoutubeAudio(song) {
   const ytDlpArgs = [
     url,
     '-f',
-    'bestaudio[ext=webm][acodec=opus]/bestaudio[ext=webm]/bestaudio/best',
+    'bestaudio/best',
     '-o',
     output,
     '--no-playlist',
