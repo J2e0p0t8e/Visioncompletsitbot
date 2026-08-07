@@ -26,7 +26,16 @@ function ensureYtDlp() {
           undefined,
           process.platform === 'win32' ? 'win32' : process.platform
         );
-        console.log('✅ yt-dlp prêt');
+        console.log('✅ yt-dlp téléchargé et prêt');
+      } else {
+        console.log('🔄 Vérification des mises à jour yt-dlp...');
+        const ytDlp = new YTDlpWrap(YTDLP_PATH);
+        try {
+          await ytDlp.execPromise(['-U']);
+          console.log('✅ yt-dlp à jour');
+        } catch (e) {
+          console.log('⚠️ Impossible de mettre à jour yt-dlp, on continue avec la version actuelle.');
+        }
       }
       return new YTDlpWrap(YTDLP_PATH);
     })();
