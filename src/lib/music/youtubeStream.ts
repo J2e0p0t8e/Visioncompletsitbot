@@ -117,7 +117,25 @@ async function downloadYoutubeAudio(song) {
     ytDlpArgs.push('--cookies', cookiesPath);
   }
 
-  await ytDlp.execPromise(ytDlpArgs);
+  try {
+    await ytDlp.execPromise(ytDlpArgs);
+  } catch (err) {
+    console.error(`⚠️ Échec YouTube (IP bloquée ou erreur), tentative via SoundCloud pour : ${song.title}`);
+    const scArgs = [
+      `scsearch1:${song.title}`,
+      '-f',
+      'bestaudio/best',
+      '-o',
+      output,
+      '--no-playlist',
+      '--no-part',
+      '--no-warnings',
+      '--ffmpeg-location',
+      ffmpegPath,
+      '--force-overwrites',
+    ];
+    await ytDlp.execPromise(scArgs);
+  }
 
   const filePath = findCachedFile(videoId);
   if (!filePath) throw new Error('Téléchargement audio échoué');
