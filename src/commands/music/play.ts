@@ -206,7 +206,9 @@ async function executePlay(interaction, client) {
     await interaction.editReply({ embeds: [embed] });
 
     if (isPlaybackActive(queue)) {
-      await sendOrUpdatePanel(queue);
+      if (!wasEmpty) {
+        await sendOrUpdatePanel(queue);
+      }
       if (addedPosition > 1) {
         const waiting = addedPosition - 1;
         await queue.textChannel?.send(
