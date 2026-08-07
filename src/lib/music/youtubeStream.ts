@@ -121,8 +121,15 @@ async function downloadYoutubeAudio(song) {
     await ytDlp.execPromise(ytDlpArgs);
   } catch (err) {
     console.error(`⚠️ Échec YouTube (IP bloquée ou erreur), tentative via SoundCloud pour : ${song.title}`);
+    
+    // Nettoyer le titre pour améliorer la précision de la recherche SoundCloud
+    const cleanTitle = song.title
+      .replace(/\[.*?\]|\(.*?\)/g, '')
+      .replace(/(clip officiel|official video|official music video|lyrics|lyric video|audio|official)/gi, '')
+      .trim();
+      
     const scArgs = [
-      `scsearch1:${song.title}`,
+      `scsearch1:${cleanTitle}`,
       '-f',
       'bestaudio/best',
       '-o',
