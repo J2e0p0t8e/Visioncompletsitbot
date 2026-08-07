@@ -101,6 +101,8 @@ async function downloadYoutubeAudio(song) {
     '--ffmpeg-location',
     ffmpegPath,
     '--force-overwrites',
+    '--extractor-args',
+    'youtube:player_client=android,ios'
   ];
 
   const cookiesPath = path.join(__dirname, '..', '..', '..', 'cookies.txt');
