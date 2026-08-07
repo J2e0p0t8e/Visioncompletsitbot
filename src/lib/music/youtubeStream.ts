@@ -3,7 +3,8 @@ import fs from "fs";
 import path from "path";
 import { StreamType  } from "@discordjs/voice";
 import ffmpegPath from "ffmpeg-static";
-import YTDlpWrap from 'yt-dlp-wrap';
+import ytDlpWrapImport from 'yt-dlp-wrap';
+const YTDlpWrap = (ytDlpWrapImport as any).default || ytDlpWrapImport;
 
 import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
